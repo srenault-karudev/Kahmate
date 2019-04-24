@@ -1,0 +1,170 @@
+If debugging is the process of removing bugs, then programming must be the process of putting them in.
+Dijkstra(?). 
+
+===
+
+vérification statique
+vs
+vérification dynamique
+
+===
+
+statique : on ne fait pas "tourner" le code.
+ça va de choses aussi simples que de vérifier que les conventions sont suivies (indentation, nommage etc)
+à
+de la vérification formelle.
+
+Ce dernier point est une spécialité du laboratoire LACL : au département info, des experts sont Frédéric Gervais et Pierre Valarcher.
+L'idée c'est qu'on décrit les propriétés du logiciel / du système dans un formalisme et qu'on vérifie que le logiciel satisfait ces propriétés.
+Ce sont des méthodes qui sont plutôt utilisés pour du hardware que du software dans l'industrie.
+Quelques exceptions : compilateurs certifiés.
+Pour du logiciel, souvent on doit faire des hypothèses sur l'environnement / le système et on ne vérifies jamais vraiment tout. 
+
+Elles ont un gros soucis : la plupart des propriétés intéressantes ne sont pas décidables.
+Par exemple : est-ce-que mon programme s'arrête en un temps fini (quel que soit ce que je lui donne à manger)?
+C'est le problème de l'arrêt de la Machine de Turing (1936).
+
+Autre exemple :
+Est-ce-que 2 programmes font la même chose?
+Indécidable en général.
+OK pour des programmes limités par exemple pour les automates; OK pour certaines familles de requêtes en bases de données (grosso modo celles de la forme : select des colonnes from des tables where des equijointures).
+
+En pratique on a des logiciels qui trouvent quand même **parfois** des réponses à de telles questions, surtout lorsque les outils sont guidés par des humains.
+(il faut imaginer une sorte de preuve comme en math faite avec un ordinateur mais guidée par un humain).
+
+Il reste toujours le soucis que peut-être que les spécifications qu'on a écrite sont incomplètes (il manque des propriétés importantes), voir sont elles-mêmes mal écrites et fausses (bug situé entre la chaise et le clavier).
+
+===
+
+vérification dynamique : on fait "tourner" le code.
+
+On fait des tests de manière empirique / expérimentale
+Différentes échelles.
+_ test unitaires      (une méthode / une classe ** ce qu'on va voir plus en détail aujourd'hui**)
+_ test d'intégrations (plus qu'un module; ressemble à ce qu'on vous a demandé de faire pour l'IHM; il existe des outils qui fabriquent des Mocks obkects)
+_ etc
+
+===
+
+Program testing can be a very effective way to show  
+the presence of bugs, but it is hopelessly inadequate  
+for showing their absence
+
+Edsger W. Dijkstra,  The Humble Programmer (1972)  
+Communications of the ACM 15(10), 972: pp. 859–866
+
+===
+
+Plus concrètement
+
+===
+
+Organisation traditionnelle du code et des tests.
+
+A priori on sépare, par exemple.
+    src/main/java - for Java classes
+    src/test/java - for test classes
+
+Sauf si le projet est petit auquel cas, on met tout au même endroit.
+
+===
+
+JUnit
+
+Référence de junit4 ici
+
+https://junit.org/junit4/javadoc/latest/index.html
+
+
+===
+
+Pour déterminer les méthodes de tests, JUnit3 recherche toutes celles commençant par "test" dans les classes héritant de TestCase.
+JUnit4, quant à lui, recherche les méthodes avec l'annotation @Test dans n'importe quelle classe.
+On va travailler avec JUnit4
+
+C'est tout de même une bonne idée de nommer ces classes de tests d'une manière identique, avec des noms en rapport avec la classe qu'on teste.
+(par exemple TestMaClasse ou bien MaClasseTest). Que vous utilisiez la ligne de commande / bash ou bien des outils de gestion de projet (comme ant) ça facilite les choses puisqu'on peut utiliser des regexp simples pour retrouver toutes les classes de tests.
+
+===
+
+Le début
+
+import org.junit.*	Import statement for using the following annotations.
+
+@Test	                Identifies a method as a test method.
+@Before	                Executed before each test. It is used to prepare the test environment (e.g., read input data, initialize the class).
+@After	                Executed after each test. It is used to cleanup the test environment (e.g., delete temporary data, restore defaults).
+                        It can also save memory by cleaning up expensive memory structures. 
+@BeforeClass	        Executed once, before the start of all tests. It is used to perform time intensive activities, for example, to connect to a database.
+                        Methods marked with this annotation need to be defined as static to work with JUnit.
+@AfterClass	        Executed once, after all tests have been finished. It is used to perform clean-up activities, for example, to disconnect from a database.
+                        Methods annotated with this annotation need to be defined as static to work with JUnit.
+@Ignore or @Ignore("Why disabled")
+                        Marks that the test should be disabled. This is useful when the underlying code has been changed and the test case has not yet been adapted. Or if the execution time of this test is too long to be included. It is best practice to provide the optional description, why the test is disabled.
+@Test (expected = Exception.class)
+                        Fails if the method does not throw the named exception.
+@Test(timeout=100)	Fails if the method takes longer than 100 milliseconds.
+
+===
+
+Maintenant, regardez les exemples.
+
+===
+
+Quand doit-on écrire les tests?
+
+XP (eXtreme Programming) / TDP (Test Driven Programming)
+écrire les tests avant!
+
+===
+
+(from https://junit.org/junit4/faq.html#best_1)
+When should tests be written?
+
+    Tests should be written before the code. Test-first programming is practiced by only writing new code when an automated test is failing.
+
+    Good tests tell you how to best design the system for its intended use. They effectively communicate in an executable format how to use the software. They also prevent tendencies to over-build the system based on speculation. When all the tests pass, you know you're done!
+
+    Whenever a customer test fails or a bug is reported, first write the necessary unit test(s) to expose the bug(s), then fix them. This makes it almost impossible for that particular bug to resurface later.
+
+    Test-driven development is a lot more fun than writing tests after the code seems to be working. Give it a try! 
+
+===
+
+(from https://junit.org/junit4/faq.html#best_2)
+Do I have to write a test for everything?
+
+    No, just test everything that could reasonably break.
+    [...]
+
+===
+(from https://junit.org/junit4/faq.html#best_3)
+
+    becomeTimidAndTestEverything
+    while writingTheSameThingOverAndOverAgain
+        becomeMoreAggressive
+        writeFewerTests
+        writeTestsForMoreInterestingCases
+        if getBurnedByStupidDefect
+            feelStupid
+            becomeTimidAndTestEverything
+        end
+    end
+
+===
+
+Pub :
+
+https://github.com/junit-team/junit5/wiki/Definition-of-Done
+
+===
+
+Pour aller plus loin :
+
+https://www.college-de-france.fr/media/gerard-berry/UPL7282856602764345150_2015_03_04_Berry_ProuverLesProgrammes_Cours2.pdf
+
+===
+
+Référence de junit4 ici
+
+https://junit.org/junit4/javadoc/latest/index.html

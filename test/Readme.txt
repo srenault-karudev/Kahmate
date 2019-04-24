@@ -1,0 +1,2 @@
+javac -classpath hamcrest-2.1.jar:hamcrest-core-2.1.jar:junit-4.13-beta-1.jar:.:../src GameStateTest.java
+java -classpath hamcrest-2.1.jar:hamcrest-core-2.1.jar:junit-4.13-beta-1.jar:.:../src org.junit.runner.JUnitCore GameStateTest
